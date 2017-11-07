@@ -19,6 +19,8 @@ knearest=function(data,k,newdata) {
   return(Prob)
 }
 
+knearest(train,3,NULL)
+
 
 
 ROC=function(Y, Yfit, p){
