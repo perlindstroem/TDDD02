@@ -44,12 +44,16 @@ knearest=function(data,k,newdata) {
     Drow <- Drow[order(Drow[,1]),]
     Drow <- head(Drow,k)
     
+    View(Drow)
+    
     PredClass[i] <- if(sum(Drow[,2] > 0)/k > 0.95) 1 else 0; 
     
     if(PredClass[i] == 1 && Yclass[i] == 1) CM[1,1] = CM[1,1] + 1
     if(PredClass[i] == 1 && Yclass[i] == 0) CM[1,2] = CM[1,2] + 1
     if(PredClass[i] == 0 && Yclass[i] == 1) CM[2,1] = CM[2,1] + 1
     if(PredClass[i] == 0 && Yclass[i] == 0) CM[2,2] = CM[2,2] + 1
+    
+    break;
   }
   
   print(1-(CM[1,1]+CM[2,2])/sum(CM))
@@ -58,4 +62,4 @@ knearest=function(data,k,newdata) {
   return(NULL)
 }
 
-knearest(train, 1, test)
+knearest(train, 5, test)
