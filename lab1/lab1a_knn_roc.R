@@ -12,7 +12,7 @@ test=data[-id,]
 train <- data.matrix(train)
 test <- data.matrix(test)
 
-knearest_multik=function(data,k,newdata) {
+knearest_multik=function(data,t,k,newdata) {
   n1=dim(data)[1]
   n2=dim(newdata)[1]
   p=dim(data)[2]
@@ -26,44 +26,36 @@ knearest_multik=function(data,k,newdata) {
   Yclass=as.matrix(newdata[,p])
   Y=Y/matrix(sqrt(rowSums(Y^2)), nrow=n1, ncol=p-1)
   
-  m=length(k)
-  TPR=numeric(m)
-  FPR=numeric(m)
+  TPR=numeric(length(t))
+  FPR=numeric(length(t))
   
   C <- X %*% t(Y)
   D <- 1-C
   
-  
-  for(j in 1:m){
-    CM <- matrix(0L, nrow = 2, ncol = 2)
-    PredClass <- rep(0,n2)
+  for(j in 1:length(t)){
+    class <- rep(0,n2)
     
     for (i in 1:n2 ){
       Drow <- D[i,, drop=F]
-      Drow <- t(Drow)
-      Drow <- cbind(Drow,Xclass)
+      Drow <- cbind(t(Drow),Xclass)
       Drow <- Drow[order(Drow[,1]),]
-      Drow <- head(Drow,5)
+      Drow <- head(Drow,k)
       
-      PredClass[i] <- if(sum(Drow[,2])/5 > k[j]) 1 else 0; 
-      
-      if(PredClass[i] == 1 && Yclass[i] == 1) CM[1,1] = CM[1,1] + 1
-      if(PredClass[i] == 1 && Yclass[i] == 0) CM[1,2] = CM[1,2] + 1
-      if(PredClass[i] == 0 && Yclass[i] == 1) CM[2,1] = CM[2,1] + 1
-      if(PredClass[i] == 0 && Yclass[i] == 0) CM[2,2] = CM[2,2] + 1
+      class[i] <- if(sum(Drow[,2])/k > t[j]) 1 else 0; 
     }
+    CM <- table(factor(Yclass, labels=c("Actual not spam", "Actual spam")),
+                factor(class, labels=c("Pred not spam", "Pred spam")));
     
-    TPR[j] = (CM[1,1] / (CM[1,1] + CM[2,1]))
-    FPR[j] = (CM[1,2] / (CM[2,2] + CM[1,2]))
+    TPR[j] = (CM[2,2] / (CM[2,2] + CM[2,1]))
+    FPR[j] = (CM[1,2] / (CM[1,2] + CM[1,1]))
   }
   
   plot(FPR, TPR, xlim=c(0,1), ylim=c(0,1))
   abline(a=0,b=1)
-  #print(1-(CM[1,1]+CM[2,2])/sum(CM))
-  #print(CM)
+  
   return(CM)
 }
 
 p <- seq(from=0.05, to=0.95, by=0.05)
 
-knearest_multik(train, p, test)
+knearest_multik(train, p, 5, test)
