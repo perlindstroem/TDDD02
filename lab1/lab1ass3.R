@@ -10,36 +10,14 @@ train=data[id,]
 test=data[-id,]
 
 #lengths were not equal
-test=test[1:107,]
+test=test[1:dim(train)[1],]
 
-par(mfrow=c(4,2))
-plot(data$Protein, data$Moisture)
-
-n=6
-MSE=numeric(n)
-MSEtest=numeric(n)
-
-for(i in 1:n) {
-  model <- lm(train$Moisture ~ poly(train$Protein, i))
-  pred <- predict(model, x=train$Protein)
+for(i in 1:6) {
+  model <- lm(Moisture ~ poly(Protein, i), data=train)
   
-  plot(train$Protein, pred)
-
-  MSE[i] <- 0
-  for(ii in 1:length(predict)){
-    MSE[i] <- MSE[i] + ((pred[ii] - train$Moisture[ii])**2)
-  }
-  MSE[i] <- MSE[i]/length(predict)
-  
-  MSEtest[i] <- 0
-  for(ii in 1:length(predict)){
-    MSEtest[i] <- MSEtest[i] + ((pred[ii] - test$Moisture[ii])**2)
-  }
-  MSEtest[i] <- MSEtest[i]/length(predict)
+  MSEtrain[i] <- mean((train$Moisture - predict(model, train))**2)
+  MSEtest[i] <- mean((test$Moisture - predict(model, test))**2)
 }
 
-plot(MSE, ylab="MSE", xlab="Degree", xlim=c(1,6), ylim=c(6,22), col="blue", type="l")
-par(new=T)
-plot(MSEtest, ylab="MSE", xlab="Degree", xlim=c(1,6), ylim=c(6,22), type="l")
-par(new=F)
-par(mfrow=c(1,1))
+plot(MSEtrain, ylab="MSE", xlab="Degree", ylim=c(31,35), col="blue", type="l")
+lines(MSEtest, col="red")

@@ -1,7 +1,5 @@
-#imports the excel-file
 library(readxl)
 data <- read_excel("TDDE01/lab1/spambase.xlsx")
-#View(spambase)
 
 #divide data into training and test
 n=dim(data)[1]
@@ -10,13 +8,7 @@ id=sample(1:n, floor(n*0.5))
 train=data[id,]
 test=data[-id,]
 
-spambase <- data.matrix(spambase)
-
-train <- data.matrix(train)
-test <- data.matrix(test)
-
 knearest=function(data,k,newdata) {
-  
   n1=dim(data)[1]
   n2=dim(newdata)[1]
   p=dim(data)[2]
@@ -30,32 +22,30 @@ knearest=function(data,k,newdata) {
   Yclass=as.matrix(newdata[,p])
   Y=Y/matrix(sqrt(rowSums(Y^2)), nrow=n1, ncol=p-1)
   
-  PredClass = rep(0,n2)
+  class = numeric(n2)
   
   C <- X %*% t(Y)
   D <- 1-C
   
-  CM <- matrix(0L, nrow = 2, ncol = 2)
-  
   for (i in 1:n2 ){
     Drow <- D[i,, drop=F]
-    Drow <- t(Drow)
-    Drow <- cbind(Drow,Xclass)
+    Drow <- cbind(t(Drow),Xclass)
     Drow <- Drow[order(Drow[,1]),]
     Drow <- head(Drow,k)
     
-    PredClass[i] <- if(sum(Drow[,2] > 0)/k > 0.95) 1 else 0; 
-    
-    if(PredClass[i] == 1 && Yclass[i] == 1) CM[1,1] = CM[1,1] + 1
-    if(PredClass[i] == 1 && Yclass[i] == 0) CM[1,2] = CM[1,2] + 1
-    if(PredClass[i] == 0 && Yclass[i] == 1) CM[2,1] = CM[2,1] + 1
-    if(PredClass[i] == 0 && Yclass[i] == 0) CM[2,2] = CM[2,2] + 1
+    #classifies
+    class[i] <- if(sum(Drow[,2] > 0)/k > 0.5) 1 else 0; 
   }
   
-  print(1-(CM[1,1]+CM[2,2])/sum(CM))
+  CM <- table(factor(Yclass, labels=c("Actual not spam", "Actual spam")),
+              factor(class, labels=c("Pred not spam", "Pred spam")));
   
+  #print classification rate and CM
+  print(1-(CM[1,1]+CM[2,2])/sum(CM))
   print(CM)
-  return(NULL)
 }
 
+knearest(train, 1, train)
+knearest(train, 5, train)
 knearest(train, 1, test)
+knearest(train, 5, test)
