@@ -12,8 +12,8 @@ test=data[-id,]
 #lengths were not equal
 test=test[1:107,]
 
-#par(mfrow=c(4,2))
-#plot(data$Protein, data$Moisture)
+par(mfrow=c(4,2))
+plot(data$Protein, data$Moisture)
 
 n=6
 MSE=numeric(n)
@@ -23,7 +23,7 @@ for(i in 1:n) {
   model <- lm(train$Moisture ~ poly(train$Protein, i))
   pred <- predict(model, x=train$Protein)
   
-  #plot(train$Protein, pred)
+  plot(train$Protein, pred)
 
   MSE[i] <- 0
   for(ii in 1:length(predict)){
