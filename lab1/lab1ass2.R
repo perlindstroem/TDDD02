@@ -31,7 +31,6 @@ result.firstSix <- loglik(head(data,6), theta)
 result.bayesian <- loglik_b(data, theta)
 
 rand <- rexp(50,rate=1.13)
-#View(rand)
 
 #set.seed(12345)
 #hist(rand)

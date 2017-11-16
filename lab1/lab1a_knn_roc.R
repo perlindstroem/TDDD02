@@ -9,9 +9,6 @@ id=sample(1:n, floor(n*0.5))
 train=data[id,]
 test=data[-id,]
 
-train <- data.matrix(train)
-test <- data.matrix(test)
-
 knearest_multik=function(data,t,k,newdata) {
   n1=dim(data)[1]
   n2=dim(newdata)[1]
