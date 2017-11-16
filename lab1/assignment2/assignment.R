@@ -1,5 +1,5 @@
 library(readxl)
-data <- read_excel("TDDE01/lab1/machines.xlsx")
+data <- read_excel("TDDE01/lab1/assignment2/machines.xlsx")
 
 theta <- seq(from=0.00, to=3, by=0.01)
 

@@ -1,5 +1,5 @@
 library(readxl)
-data <- read_excel("TDDE01/lab1/spambase.xlsx")
+data <- read_excel("TDDE01/lab1/assignment1/spambase.xlsx")
 
 #divide data into training and test
 n=dim(data)[1]
