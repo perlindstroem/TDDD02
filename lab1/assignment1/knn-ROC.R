@@ -33,8 +33,8 @@ knearest_multik=function(data,t,k,newdata) {
     class <- rep(0,n2)
     
     for (i in 1:n2 ){
-      Drow <- D[i,, drop=F]
-      Drow <- cbind(t(Drow),Xclass)
+      Drow <- D[,i, drop=F]
+      Drow <- cbind(Drow,Xclass)
       Drow <- Drow[order(Drow[,1]),]
       Drow <- head(Drow,k)
       
