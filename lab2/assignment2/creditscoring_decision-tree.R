@@ -5,19 +5,23 @@ data = read_excel("TDDE01/lab2/assignment2/creditscoring.xls")
 data$good_bad = as.factor(data$good_bad)
 n = dim(data)[1]
 
+# splitting
 training = data[1:floor((1/2)*n),]
 validation = data[(floor((1/2)*n)+1):(floor((3/4)*n)),]
 test = data[(floor((3/4)*n)+1):n,]
 
+# fitting
 fit.gini = tree(good_bad ~ ., data = training, split = c("gini"))
 fit.dev = tree(good_bad ~ ., data = training, split = c("deviance"))
 
+# predictions
 pred.train.gini = predict(fit.gini, newdata=training, type="class")
 pred.train.dev = predict(fit.dev, newdata=training, type="class")
 
 pred.test.gini = predict(fit.gini, newdata=test, type="class")
 pred.test.dev = predict(fit.dev, newdata=test, type="class")
 
+# confusion matrices
 table(training$good_bad, pred.train.gini)
 table(training$good_bad, pred.train.dev)
 
@@ -27,6 +31,7 @@ table(test$good_bad, pred.test.dev)
 fit.dev
 summary(fit.dev)
 
+# finding optimal size
 n_leaves = 19
 
 trainScore=rep(0,n_leaves)
