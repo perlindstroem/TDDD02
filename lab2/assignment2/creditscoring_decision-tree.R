@@ -3,6 +3,9 @@ library(tree)
 
 data = read_excel("TDDE01/lab2/assignment2/creditscoring.xls")
 data$good_bad = as.factor(data$good_bad)
+
+View(data)
+
 n = dim(data)[1]
 
 # splitting

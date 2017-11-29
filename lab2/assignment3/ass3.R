@@ -1,7 +1,7 @@
 library(tree)
 library(boot)
 
-data = read.csv(file = "TDDE01/lab2/assignment3/State.csv", header=T, sep=";")
+data = read.csv2(file = "TDDE01/lab2/assignment3/State.csv", header=T, sep=";")
 data$EX = as.numeric(data$EX)
 data$MET = as.numeric(data$MET)
 data = data[order(data$MET),]
@@ -40,17 +40,17 @@ rng = function(data, mle) {
 
 q2 = function() {
   plot(data$MET, data$EX, ylab="EX", xlab="MET")
-  # model ???
   
   fit = tree(EX ~ MET, data, control = tree.control(48, minsize = 8))
   fitted = predict(fit, newdata=data)
-  #plot(fit)
+  plot(fit)
+  View(fit)
   text(fit, pretty=0)
   
   points(data$MET, fitted, col="BLUE")
   
   residual = resid(fit)
-  #hist(residual)
+  hist(residual)
 }
 
 # parametric
@@ -77,10 +77,11 @@ q3 = function() {
   res = boot(data, f, R=1000)
   e = envelope(res)
   
-  #plot(data$MET, data$EX, ylab="EX", xlab="MET")
+  plot(data$MET, data$EX, ylab="EX", xlab="MET")
   lines(data$MET, e$point[2,], col="green")
   lines(data$MET, e$point[1,], col="green")
 }
 
-q4()
-q3()
+q2()
+#q4()
+#q3()
