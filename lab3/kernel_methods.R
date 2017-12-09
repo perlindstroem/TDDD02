@@ -1,39 +1,86 @@
-  set.seed(1234567890)
-  library(geosphere)
+start_time <- Sys.time()
+
+set.seed(1234567890)
+library(geosphere)
+
+stations <- read.csv("TDDE01/lab3/stations.csv")
+temps <- read.csv("TDDE01/lab3/temps50k.csv")
+st <- merge(stations,temps,by="station_number") #kan ber??kna distansdiff innan merge
+
+# parameters
+h_distance <- 200*1000
+h_date <- 20
+h_time <- 4
+
+position <- c(14.826, 58.4274) # vadstena 
+#position <- c(20.1534, 63.4942) # ume?? 
+
+#date <- "2013-02-04"
+date <- "2013-07-14"
+times <- c("04:00:00", "06:00:00", "08:00:00", "10:00:00", "12:00:00", "14:00:00", "16:00:00", "18:00:00", "20:00:00", "22:00:00", "00:00:00")
+temp <- vector(length=length(times))
+
+# ---- compares positions -----
+
+station.positions <- cbind(st[,5], st[,4])
+diff.dist = apply(station.positions, 1, function(x) distHaversine(position, x))
+
+# ---- compares dates -----
+
+convert_to_days = function(date) {
+  tokens = as.numeric(strsplit(date, split="-")[[1]])
+  days_in_month = 30.4 #avg days in a month
+  return(as.integer((tokens[2]-1)*days_in_month + tokens[3]))
+}
+
+compare_days = function(x,y) {
+  diff.forward = abs(x-y)
+  diff.backward = abs((365-x)-y)
+  return(min(c(diff.forward, diff.backward)))
+}
+
+days = sapply(st["date"], as.character)
+days = sapply(days, convert_to_days)
+day = convert_to_days(date)
+diff.date = sapply(days, function(x) compare_days(x, day))
+
+# ---- compares times -----
+
+convert_to_hours = function(timestamp) {
+  tokens = as.numeric(strsplit(timestamp, split=":")[[1]])
+  return(tokens[1])
+  #return(tokens[1]*3600 + tokens[2]*60 + tokens[3])
+}
+
+compare_hours = function(x,y) {
+  diff.forward = abs(x-y)
+  diff.backward = abs((24-x)-y)
+  return(min(c(diff.forward, diff.backward)))
+}
+
+time = sapply(st["time"], as.character)
+time = sapply(time, convert_to_hours)
+
+# ---- compares applies kernels, time above -----
+
+smoothed.date = sapply(diff.date/h_date, function(x) exp(-x*x))
+smoothed.dist = sapply(diff.dist/h_distance, function(x) exp(-x*x))
+
+diff.time = matrix(nrow=dim(temps)[1], ncol=length(times))
+smoothed.time = matrix(nrow=dim(temps)[1], ncol=length(times))
+
+for(i in 1:length(times)) {
+  comp_time = convert_to_hours(times[i])
+  diff.time[,i] = sapply(time, function(x) compare_hours(x,comp_time))
+  smoothed.time[,i] = sapply(diff.time[,i]/h_time, function(x) exp(-x*x))
   
-  stations <- read.csv("TDDE01/lab3/stations.csv")
-  temps <- read.csv("TDDE01/lab3/temps50k.csv")
-  st <- merge(stations,temps,by="station_number")
-  
-  #sum(kernel*temp)/sum(kernel)
-  
-  h_distance <- 100000 # These three values are up to the students
-  h_date <- 100
-  h_time <- 1
-  
-  p.lat <- 58.4274 # vadstena n??gonstans
-  p.long <- 14.826
-  position <- c(p.long, p.lat)
-  
-  date <- "2013-11-04" # The date to predict (up to the students)
-  times <- c("04:00:00", "06:00:00", "08:00:00", "10:00:00", "12:00:00", "14:00:00", "16:00:00", "18:00:00", "20:00:00", "22:00:00", "24:00:00")
-  temp <- vector(length=length(times))
-  
-  dates <- temps["date"]
-  station.positions <- cbind(stations[,5], stations[,4])
-  
-  #diff.date = apply(dates, 1, function(x) abs(difftime(x, date)))
-  diff.dist = apply(station.positions, 1, function(x) distHaversine(position, x))
-  
-  gaussKernel.dist = function(x) {
-    return(exp(-x/h_distance))
-  }
-  #View(diff.date)
-  
-  smoothed.date = sapply(diff.date, function(x) exp(-x/h_date))
-  smoothed.dist = sapply(diff.distances, gaussKernel.dist)
-  
-  #View(cbind(diff.date, smoothed.date))
-  #View(cbind(diff.dist, smoothed.dist))
-  
-  plot(temp, type="o")
+  kernels = smoothed.time[,i]*smoothed.date*smoothed.dist
+  temp[i] = sum(kernels*st["air_temperature"])/sum(kernels)
+}
+
+plot(temp, type="o", xaxt="n", xlab="Time of day", ylab="Temperature")
+axis(1, at=1:length(temp), labels=times)
+
+end_time <- Sys.time()
+
+print(end_time - start_time)
